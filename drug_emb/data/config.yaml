@@ -1,0 +1,38 @@
+project_params:
+  entity: "hyeonsu"
+  project: "MolGAN"
+  max_epochs: 10000
+  seed: 42
+  gpus: 1
+  accelerator: "ddp"
+  patience: 80
+  monitor: "g_loss"
+  logging_interval: "step"
+  save_path: "/raid/lhs_sci/MolGAN/checkpoint/"
+data_module_params:
+  dataset_params:
+    data_dir: "data/"
+    data_name: "antiviral_with_properties.sdf"
+    add_h: False
+    filters: 30
+  batch_size: 128
+  seed: 42
+  num_workers: 4
+  pin_memory: True
+module_params:
+  z_dim: 8
+  atom_dim:
+  bond_dim:
+  vertex:
+  g_conv_dim: [128,256,512]
+  d_conv_dim: [[128,64], 128, [128,64]]
+  lambda_gp: 10
+  post_method: "softmax"
+  dropout: 0.1
+  g_lr: 0.0001
+  d_lr: 0.0001
+  beta_1: 0.5
+  beta_2: 0.999
+  num_iter_decay: 100
+  gamma: 0.5
+  data_path:

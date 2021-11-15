@@ -47,19 +47,19 @@ class molgan(pl.LightningModule):
             bond_dim,
             dropout,
         )
-        self.discriminator = discriminator(d_conv_dim, atom_dim, bond_dim, dropout)
-        self.rewarder = discriminator(d_conv_dim, atom_dim, bond_dim, dropout)
+        self.discriminator = discriminator(d_conv_dim, atom_dim, bond_dim - 1, dropout)
+        self.rewarder = discriminator(d_conv_dim, atom_dim, bond_dim - 1, dropout)
 
     def forward(self, z):
         return self.generator(z)
 
     def training_step(self, batch, batch_idx, optimizer_idx):
         # Preprocess input data
-        mol_idx, A, X = batch
+        mol_idx, adj, feat = batch
         mols = self.mol_data[mol_idx.cpu()]
         smiles = self.smiles_data[mol_idx.cpu()]
-        adjacency = onehot_encoding(A, self.hparams.bond_dim, self.device)
-        features = onehot_encoding(X, self.hparams.atom_dim, self.device)
+        adjacency = onehot_encoding(adj, self.hparams.bond_dim, self.device)
+        features = onehot_encoding(feat, self.hparams.atom_dim, self.device)
         z = (
             th.randn(mol_idx.shape[0], self.hparams.z_dim)
             .to(th.float32)
@@ -71,8 +71,6 @@ class molgan(pl.LightningModule):
             edges, nodes = self(z)
             # Postprocess with Gumbel softmax
             edges_hat, nodes_hat = postprocess((edges, nodes), self.hparams.post_method)
-            print("input layer shape")
-            print(self.hparams.d_conv_dim[0][-1] + self.hparams.bond_dim)
             logits_fake, features_fake = self.discriminator(edges_hat, None, nodes_hat)
             g_loss_fake = -th.mean(logits_fake)
             # Real reward
@@ -95,6 +93,7 @@ class molgan(pl.LightningModule):
                 self.device
             )
             # Value loss
+            print(adjacency.shape, features.shape)
             real_value_logits, _ = self.rewarder(adjacency, None, features, th.sigmoid)
             fake_value_logits, _ = self.rewarder(edges_hat, None, nodes_hat, th.sigmoid)
             g_loss_value = th.mean(

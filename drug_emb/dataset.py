@@ -33,9 +33,9 @@ class sparse_molecular_dataset(Dataset):
             self.smiles_num_types,
         ) = self.generate_encoder_decoder(smiles_labels, "smiles")
 
-        if osp.exists(data_dir + data_name.split(".")[0] + "_preprocess.npz"):
+        if osp.exists(data_dir + data_name.split(".")[0] + "_preprocess_f" + str(filters) + ".npz"):
             data_adj = np.load(
-                data_dir + data_name.split(".")[0] + "_preprocess.npz",
+                data_dir + data_name.split(".")[0] + "_preprocess_f" + str(filters) + ".npz",
                 allow_pickle=True,
             )
             data, data_smiles, data_A, data_X, data_F = (
@@ -78,9 +78,9 @@ class sparse_molecular_dataset(Dataset):
 
     def load(self, data_dir, data_name, add_h, filters):
         print("Loading data...")
-        if osp.exists(data_dir + data_name.split(".")[0] + ".npy"):
+        if osp.exists(data_dir + data_name.split(".")[0] + "_" + str(filters) + ".npy"):
             origin_data = np.load(
-                data_dir + data_name.split(".")[0] + ".npy", allow_pickle=True
+                data_dir + data_name.split(".")[0] + "_" + str(filters) + ".npy", allow_pickle=True
             ).tolist()
         else:
             if data_name.endswith(".sdf"):
@@ -99,7 +99,7 @@ class sparse_molecular_dataset(Dataset):
                 raise ValueError("Input file format must be .sdf or .smi")
 
             np.save(
-                data_dir + data_name.split(".")[0] + ".npy",
+                data_dir + data_name.split(".")[0] + "_" + str(filters) + ".npy",
                 np.array(origin_data),
                 allow_pickle=True,
             )

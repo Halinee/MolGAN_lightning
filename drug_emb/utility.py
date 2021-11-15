@@ -65,7 +65,10 @@ def postprocess(inputs, method, temperature=1.0):
     return [delistify(e) for e in (softmax)]
 
 
-def matrices_to_mol(self, node_labels, edge_labels, strict=False):
+def matrices_to_mol(self, node_labels=None, edge_labels=None, strict=False):
+    if node_labels is None or edge_labels is None:
+        return None
+
     mol = Chem.RWMol()
 
     for node_label in node_labels:
